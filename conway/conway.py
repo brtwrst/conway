@@ -25,7 +25,9 @@ class conway(QMainWindow):
     def __init__(self, parent=None):
         super().__init__()
         self.started = False
-        self.resize(900,900)
+        self.dim = 99
+        self.size = 9
+        self.resize(self.size * 100, self.size* 100)
         self.centralwidget = QWidget()
         self.setCentralWidget(self.centralwidget)
 
@@ -33,15 +35,15 @@ class conway(QMainWindow):
         self.gridLayout.setSpacing(0)
 
         self.buttons = []
-        for i in range(99):
+        for i in range(self.dim):
             l=[]
-            for j in range(99):
+            for j in range(self.dim):
                 b=conwayButton(i,j, self)
                 l.append(b)
                 self.gridLayout.addWidget(b, i, j)
-                self.gridLayout.setColumnMinimumWidth(j, 9)
+                self.gridLayout.setColumnMinimumWidth(j, self.size)
             self.buttons.append(l)
-            self.gridLayout.setRowMinimumHeight(i, 9)
+            self.gridLayout.setRowMinimumHeight(i, self.size)
 
         self.shortcutSpace = QShortcut(QKeySequence('space'), self)
         self.shortcutSpace.activated.connect(self.on_spacebar)
