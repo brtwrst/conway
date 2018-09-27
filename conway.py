@@ -2,9 +2,12 @@
 """ Conways game of life """
 #pylint: disable=E0611
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
-from PyQt5.QtWidgets import QMainWindow, QShortcut, QAction, qApp
+from PyQt5.QtWidgets import QMainWindow, QShortcut, QAction, qApp, QStyleFactory
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import QKeySequence, QIcon
 import json
+import sys
+import os
 
 
 class conwayButton(QPushButton):
@@ -31,6 +34,7 @@ class conway(QMainWindow):
         self.gen = 0
         self.setupUI()
         self.setupMenu()
+        # self.help_popup()
 
     def setupUI(self):
         self.setWindowTitle('Press Space to advance')
@@ -57,36 +61,76 @@ class conway(QMainWindow):
         self.shortcutSpace.activated.connect(self.on_spacebar)
 
         menubar = self.menuBar()
-        file_menu = menubar.addMenu('&File')
 
         saveAct = QAction('&Save', self)
         saveAct.triggered.connect(self._save)
-        file_menu.addAction(saveAct)
+        menubar.addAction(saveAct)
 
         loadAct = QAction('&Load', self)
         loadAct.triggered.connect(self._load)
-        file_menu.addAction(loadAct)
+        menubar.addAction(loadAct)
 
         template_menu = menubar.addMenu('&Templates')
-        templateActGG = QAction('&GliderGun', self)
-        templateActGG.triggered.connect(self._setupGG)
-        template_menu.addAction(templateActGG)
+
+        templateSimple = QAction('&SimpleGliders', self)
+        templateSimple.triggered.connect(self._setupSimple)
+        template_menu.addAction(templateSimple)
+
+        templateActDGG = QAction('&DoubleGliderGun + Catchers', self)
+        templateActDGG.triggered.connect(self._setupDGG)
+        template_menu.addAction(templateActDGG)
+
+        templateActMGG = QAction('&QuadGliderGun - No Catchers', self)
+        templateActMGG.triggered.connect(self._setupMGG)
+        template_menu.addAction(templateActMGG)
+
+        templateActVirus = QAction('&Viruses', self)
+        templateActVirus.triggered.connect(self._setupViruses)
+        template_menu.addAction(templateActVirus)
+
+        templateActEM = QAction('&EM', self)
+        templateActEM.triggered.connect(self._setupEM)
+        template_menu.addAction(templateActEM)
 
         clearAct = QAction('&Reset', self)
         clearAct.triggered.connect(self._clear)
         menubar.addAction(clearAct)
 
+        helpAct = QAction('&Help', self)
+        helpAct.triggered.connect(self.help_popup)
+        menubar.addAction(helpAct)
+
         exitAct = QAction('&Exit', self)
         exitAct.triggered.connect(qApp.quit)
         menubar.addAction(exitAct)
 
+    def help_popup(self):
+        _ = QMessageBox.information(
+            self, 'Rules',
+            'Any live cell with fewer than two live neighbors dies, '+
+            'as if by under population.\n'+
+            'Any live cell with two or three live neighbors lives on '+
+            'to the next generation.\n'+
+            'Any live cell with more than three live neighbors dies, '+
+            'as if by overpopulation.\n'+
+            'Any dead cell with exactly three live neighbors becomes '+
+            'a live cell, as if by reproduction.'+
+            '\n\nClick to toggle a cell between dead/alive.'
+            '\nUse Spacebar to advance one generation.',
+            QMessageBox.Ok
+            )
+
     def _save(self):
-        with open('saved.json', 'w') as f:
+        with open(f'saved.json', 'w') as f:
             json.dump([self.cells, self.gen, self.dim,
                        self.bSize], f, indent=1)
 
     def _load(self):
-        with open('saved.json') as f:
+        if os.path.isfile('saved.json'):
+            self._loadgame('saved')
+
+    def _loadgame(self, game='saved'):
+        with open(f'{game}.json') as f:
             self.cells, self.gen, self.dim, self.bSize = json.load(f)
         self.setupUI()
         for sub_cell, sub_btn in zip(self.cells, self.buttons):
@@ -96,8 +140,20 @@ class conway(QMainWindow):
                 )
         self.setWindowTitle(f'Gen {self.gen}')
 
-    def _setupGG(self):
-        print('Setting up GliderGun')
+    def _setupSimple(self):
+        self._loadgame('simple')
+
+    def _setupEM(self):
+        self._loadgame('em')
+
+    def _setupDGG(self):
+        self._loadgame('dgg')
+
+    def _setupMGG(self):
+        self._loadgame('mgg')
+
+    def _setupViruses(self):
+        self._loadgame('viruses')
 
     def _clear(self):
         self.cells = [[False for _ in range(self.dim)]
@@ -109,7 +165,6 @@ class conway(QMainWindow):
         self.setWindowTitle('Press Space to advance')
 
     def on_spacebar(self):
-        print(len(self.cells))
         self.evolve()
         self.gen += 1
         self.setWindowTitle(f'Gen {self.gen}')
@@ -152,8 +207,6 @@ class conway(QMainWindow):
 
 
 def main():
-    import sys
-    from PyQt5.QtWidgets import QStyleFactory
     _dim = 0
     _size = 0
     if len(sys.argv) > 1:
@@ -161,7 +214,7 @@ def main():
         _size = int(sys.argv[2])
     app = QApplication([])
     # print(QStyleFactory.keys())
-    app.setStyle(QStyleFactory.create('Fusion'))
+    app.setStyle(QStyleFactory.create('Windows'))
     window = conway(_dim or 50, _size or 15)
     window.show()
     app.exec_()
