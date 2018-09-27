@@ -2,7 +2,8 @@
 """ FOO """
 #pylint: disable=E0611
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QShortcut
+from PyQt5.QtGui import QKeySequence
 
 class conwayButton(QPushButton):
     def __init__(self, x, y, p):
@@ -23,6 +24,7 @@ class conwayButton(QPushButton):
 class conway(QMainWindow):
     def __init__(self, parent=None):
         super().__init__()
+        self.started = False
         self.resize(900,900)
         self.centralwidget = QWidget()
         self.setCentralWidget(self.centralwidget)
@@ -40,6 +42,14 @@ class conway(QMainWindow):
                 self.gridLayout.setColumnMinimumWidth(j, 9)
             self.buttons.append(l)
             self.gridLayout.setRowMinimumHeight(i, 9)
+
+        self.shortcutSpace = QShortcut(QKeySequence('space'), self)
+        self.shortcutSpace.activated.connect(self.on_spacebar)
+
+    def on_spacebar(self):
+        self.started = True
+        print('SPAAACE', self.started)
+        self.shortcutSpace.activated.disconnect()
 
     def click(self, x=0, y=0):
         self.buttons[x][y].setStyleSheet("background-color: black")
