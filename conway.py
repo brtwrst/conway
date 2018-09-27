@@ -214,7 +214,7 @@ def main():
         _size = int(sys.argv[2])
     app = QApplication([])
     # print(QStyleFactory.keys())
-    app.setStyle(QStyleFactory.create('Windows'))
+    # app.setStyle(QStyleFactory.create('Windows'))
     window = conway(_dim or 50, _size or 15)
     window.show()
     app.exec_()
