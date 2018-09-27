@@ -2,8 +2,9 @@
 """ Conways game of life """
 #pylint: disable=E0611
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
-from PyQt5.QtWidgets import QMainWindow, QShortcut
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QMainWindow, QShortcut, QAction, qApp
+from PyQt5.QtGui import QKeySequence, QIcon
+import json
 
 class conwayButton(QPushButton):
     def __init__(self, x, y, p, s):
@@ -26,6 +27,7 @@ class conway(QMainWindow):
         self.cells = [[False for _ in range(self.dim)] for _ in range(self.dim)]
         self.gen = 0
         self.setupUI()
+        self.setupMenu()
 
     def setupUI(self):
         self.setWindowTitle('Press Space to advance')
@@ -47,10 +49,63 @@ class conway(QMainWindow):
             self.buttons.append(l)
             self.gridLayout.setRowMinimumHeight(i, self.bSize)
 
+    def setupMenu(self):
         self.shortcutSpace = QShortcut(QKeySequence('space'), self)
         self.shortcutSpace.activated.connect(self.on_spacebar)
 
+        exitAct = QAction('&Exit', self)
+        exitAct.triggered.connect(qApp.quit)
+
+        clearAct = QAction('&Reset', self)
+        clearAct.triggered.connect(self._clear)
+
+        templateActGG = QAction('&GliderGun', self)
+        templateActGG.triggered.connect(self._setupGG)
+
+        saveAct = QAction('&Save', self)
+        saveAct.triggered.connect(self._save)
+
+        loadAct = QAction('&Load', self)
+        loadAct.triggered.connect(self._load)
+
+        menubar = self.menuBar()
+        file_menu = menubar.addMenu('&File')
+        file_menu.addAction(saveAct)
+        file_menu.addAction(loadAct)
+        template_menu = menubar.addMenu('&Templates')
+        template_menu.addAction(templateActGG)
+        menubar.addAction(clearAct)
+        menubar.addAction(exitAct)
+
+
+    def _save(self):
+        with open('saved.json', 'w') as f:
+            json.dump([self.cells, self.gen, self.dim, self.bSize], f, indent=1)
+
+    def _load(self):
+        with open('saved.json') as f:
+            self.cells, self.gen, self.dim, self.bSize = json.load(f)
+        self.setupUI()
+        for sub_cell, sub_btn in zip(self.cells, self.buttons):
+            for cell, btn in zip(sub_cell, sub_btn):
+                btn.setStyleSheet(
+                f'background-color: {"black" if cell else "white"}'
+                )
+        self.setWindowTitle(f'Gen {self.gen}')
+
+    def _setupGG(self):
+        print('Setting up GliderGun')
+
+    def _clear(self):
+        self.cells = [[False for _ in range(self.dim)] for _ in range(self.dim)]
+        for b_row in self.buttons:
+            for b in b_row:
+                b.setStyleSheet("background-color: White")
+        self.gen = 0
+        self.setWindowTitle('Press Space to advance')
+
     def on_spacebar(self):
+        print(len(self.cells))
         self.evolve()
         self.gen += 1
         self.setWindowTitle(f'Gen {self.gen}')
@@ -95,12 +150,15 @@ class conway(QMainWindow):
 
 def main():
     import sys
+    from PyQt5.QtWidgets import QStyleFactory
     _dim = 0
     _size = 0
     if len(sys.argv) > 1:
         _dim = int(sys.argv[1])
         _size = int(sys.argv[2])
     app = QApplication([])
+    # print(QStyleFactory.keys())
+    app.setStyle(QStyleFactory.create('Fusion'))
     window = conway(_dim or 50,_size or 15)
     window.show()
     app.exec_()
