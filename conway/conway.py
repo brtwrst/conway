@@ -2,7 +2,7 @@
 """ FOO """
 #pylint: disable=E0611
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QGridLayout
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QMainWindow
 
 class conwayButton(QPushButton):
     def __init__(self, x, y, p):
@@ -10,13 +10,12 @@ class conwayButton(QPushButton):
         self._x = x
         self._y = y
         self._parent = p
-        self.initUI()
+        self.buttonSetup()
 
-    def initUI(self):
+    def buttonSetup(self):
         self.setFixedSize(9,9)
         self.clicked.connect(self._click)
         self.setStyleSheet("background-color: White")
-        # self.show()
 
     def _click(self):
         self._parent.click(self._x, self._y)
@@ -28,20 +27,8 @@ class conway(QMainWindow):
         self.centralwidget = QWidget()
         self.setCentralWidget(self.centralwidget)
 
-        self.vLayout = QVBoxLayout(self.centralwidget)
-        self.hLayout = QHBoxLayout()
-
-        self.gridLayout = QGridLayout()
+        self.gridLayout = QGridLayout(self.centralwidget)
         self.gridLayout.setSpacing(0)
-
-        # center the grid with stretch on both sides
-        self.hLayout.addStretch(1)
-        self.hLayout.addLayout(self.gridLayout)
-        self.hLayout.addStretch(1)
-
-        self.vLayout.addLayout(self.hLayout)
-        # push grid to the top of the window
-        self.vLayout.addStretch(1)
 
         self.buttons = []
         for i in range(99):
