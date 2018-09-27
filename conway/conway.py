@@ -24,9 +24,13 @@ class conwayButton(QPushButton):
 class conway(QMainWindow):
     def __init__(self, parent=None):
         super().__init__()
-        self.started = False
         self.dim = 99
         self.size = 9
+        self.cells = [[0 for _ in range(99)] for _ in range(99)]
+
+        self.setupUI()
+
+    def setupUI(self):
         self.resize(self.size * 100, self.size* 100)
         self.centralwidget = QWidget()
         self.setCentralWidget(self.centralwidget)
@@ -49,12 +53,19 @@ class conway(QMainWindow):
         self.shortcutSpace.activated.connect(self.on_spacebar)
 
     def on_spacebar(self):
-        self.started = True
-        print('SPAAACE', self.started)
-        self.shortcutSpace.activated.disconnect()
+        print('SPAAACE')
+        # self.shortcutSpace.activated.disconnect()
 
     def click(self, x=0, y=0):
-        self.buttons[x][y].setStyleSheet("background-color: black")
+        self.cells[x][y] = not self.cells[x][y]
+        # self.buttons[x][y].setStyleSheet("background-color: black")
+        self.draw(x,y)
+
+    def draw(self, x, y):
+        self.buttons[x][y].setStyleSheet(
+            f'background-color: {"black" if self.cells[x][y] else "white"}'
+            )
+
 
 def main():
     app = QApplication([])
